@@ -1,0 +1,531 @@
+
+SQL*Plus: Release 10.2.0.1.0 - Production on Sat May 31 10:26:44 2025
+
+Copyright (c) 1982, 2005, Oracle.  All rights reserved.
+
+SQL> conn;
+Enter user-name: system
+Enter password:
+Connected.
+SQL> create database BBSR identified by bbsr123;
+create database BBSR identified by bbsr123
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed
+ORA-01100: database already mounted
+
+
+SQL> create database BBSR1 identified by bbsr123;
+create database BBSR1 identified by bbsr123
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed
+ORA-01100: database already mounted
+
+
+SQL> create user BBSR1 identified by bbsr123;
+
+User created.
+
+SQL> conn;
+Enter user-name: bbsr1
+Enter password:
+ERROR:
+ORA-01045: user BBSR1 lacks CREATE SESSION privilege; logon denied
+
+
+Warning: You are no longer connected to ORACLE.
+SQL> conn;
+Enter user-name: system
+Enter password:
+Connected.
+SQL> grant connect,resource,dba,unlimited tablespace to bbsr1;
+
+Grant succeeded.
+
+SQL> connect;
+Enter user-name: bbsr1
+Enter password:
+Connected.
+SQL> select * from tab;
+
+no rows selected
+
+SQL> conn;
+Enter user-name: bbsr1
+Enter password:
+Connected.
+SQL> select * from tab;
+
+no rows selected
+
+SQL> create table unique1 (sl number(2),name varchar2(5) unique);
+
+Table created.
+
+SQL> insert into unique1 values(&sl,'&name');
+Enter value for sl: 1
+Enter value for name: sita
+old   1: insert into unique1 values(&sl,'&name')
+new   1: insert into unique1 values(1,'sita')
+
+1 row created.
+
+SQL> set verify off;
+SQL> /
+Enter value for sl: 2
+Enter value for name: sita
+insert into unique1 values(2,'sita')
+*
+ERROR at line 1:
+ORA-00001: unique constraint (BBSR1.SYS_C004923) violated
+
+
+SQL> create table notnull1 (sl number(2),name varchar2(5) not null);
+
+Table created.
+
+SQL> insert into notnull (sl) values (1);
+insert into notnull (sl) values (1)
+            *
+ERROR at line 1:
+ORA-00942: table or view does not exist
+
+
+SQL> insert into notnull1 (sl) values (1);
+insert into notnull1 (sl) values (1)
+*
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("BBSR1"."NOTNULL1"."NAME")
+
+
+SQL> create table primary1 (sl number(2),name varchar2(5) primary key);
+
+Table created.
+
+SQL> insert into primary1 values(&sl,'&name');
+Enter value for sl: 1
+Enter value for name: sita
+
+1 row created.
+
+SQL> /
+Enter value for sl: 2
+Enter value for name: sita
+insert into primary1 values(2,'sita')
+*
+ERROR at line 1:
+ORA-00001: unique constraint (BBSR1.SYS_C004925) violated
+
+
+SQL> insert into primary1 (sl) values (1);
+insert into primary1 (sl) values (1)
+*
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("BBSR1"."PRIMARY1"."NAME")
+
+
+SQL> create table check1 (sl number(2),name varchar2(5) not null,age number(2) check age>=18 );
+create table check1 (sl number(2),name varchar2(5) not null,age number(2) check age>=18 )
+                                                                                *
+ERROR at line 1:
+ORA-00906: missing left parenthesis
+
+
+SQL> create table check1 (sl number(2),name varchar2(5) not null,age number(2) check (age>=18));
+
+Table created.
+
+SQL> insert into check1 values(&sl,'&name',&age);
+Enter value for sl: 1
+Enter value for name: sita
+Enter value for age: 34
+
+1 row created.
+
+SQL> /
+Enter value for sl: 2
+Enter value for name: mita
+Enter value for age: 12
+insert into check1 values(2,'mita',12)
+*
+ERROR at line 1:
+ORA-02290: check constraint (BBSR1.SYS_C004927) violated
+
+
+SQL> /
+Enter value for sl: 2
+Enter value for name: mita
+Enter value for age: 18
+
+1 row created.
+
+SQL> create table default1 (sl number(2),name varchar2(5) not null,age number(2) default 18);
+
+Table created.
+
+SQL> insert into default1 (sl,name) values (1,'sitsa');
+
+1 row created.
+
+SQL> insert into default1 (sl,name,age) values (2,'ritsa',45);
+
+1 row created.
+
+SQL> select * from default1;
+
+        SL NAME         AGE
+---------- ----- ----------
+         1 sitsa         18
+         2 ritsa         45
+
+SQL> conn;
+Enter user-name: system
+Enter password:
+Connected.
+SQL> select * from mobile;
+
+MODEL      PRICE
+---------- ----------
+nokia      10000
+samsung    20000
+iphone     50000
+
+SQL> select * from laptop;
+
+MODEL                PRICE
+--------------- ----------
+dell                 50000
+acer                 20000
+asus                 10000
+
+SQL> select * from r;
+
+        ID MANAG
+---------- -----
+         1 m1
+         2 m2
+         4 m4
+
+SQL> select * from l;
+
+        ID NAME
+---------- -----
+         1 a
+         2 b
+         3 c
+
+SQL> --join
+SQL> --Joins are used when we need to fetch the data from multiple tables.
+SQL> --types of joins
+SQL> --1.Cartesian join
+SQL> --2.inner(equi) join
+SQL> --3. Outer join-left outer,right outer and full outer join
+SQL> --4.self join
+SQL> ---Cartesian join:-Based on cartesian produc theory.
+SQL> ---inner join:- Inner joins are call equi join
+SQL> --They return the matching records between the table
+SQL> --outer joins:- It returns both matching and non-matching records.
+SQL> select * from laptop;
+
+MODEL                PRICE
+--------------- ----------
+dell                 50000
+acer                 20000
+asus                 10000
+
+SQL> select * from mobile;
+
+MODEL      PRICE
+---------- ----------
+nokia      10000
+samsung    20000
+iphone     50000
+
+SQL> select laptop.model,laptop.price,mobile.model,mobile.price from laptop inner join mobile on  laptop.price<=mobile.price;
+
+MODEL                PRICE MODEL      PRICE
+--------------- ---------- ---------- ----------
+dell                 50000 iphone     50000
+acer                 20000 samsung    20000
+acer                 20000 iphone     50000
+asus                 10000 nokia      10000
+asus                 10000 samsung    20000
+asus                 10000 iphone     50000
+
+6 rows selected.
+
+SQL> select laptop.model,laptop.price,mobile.model,mobile.price from laptop inner join mobile on  laptop.price>=mobile.price;
+
+MODEL                PRICE MODEL      PRICE
+--------------- ---------- ---------- ----------
+dell                 50000 nokia      10000
+dell                 50000 samsung    20000
+dell                 50000 iphone     50000
+acer                 20000 nokia      10000
+acer                 20000 samsung    20000
+asus                 10000 nokia      10000
+
+6 rows selected.
+
+SQL> select laptop.model,laptop.price,mobile.model,mobile.price from laptop inner join mobile on  laptop.price=mobile.price;
+
+MODEL                PRICE MODEL      PRICE
+--------------- ---------- ---------- ----------
+asus                 10000 nokia      10000
+acer                 20000 samsung    20000
+dell                 50000 iphone     50000
+
+SQL> select * from r;
+
+        ID MANAG
+---------- -----
+         1 m1
+         2 m2
+         4 m4
+
+SQL> select * from l;
+
+        ID NAME
+---------- -----
+         1 a
+         2 b
+         3 c
+
+SQL> select l.id,l.name,r.id,r.manager from l left outer join r on r.id=l.id;
+
+        ID NAME          ID MANAG
+---------- ----- ---------- -----
+         1 a              1 m1
+         2 b              2 m2
+         3 c
+
+SQL> select l.id,l.name,r.id,r.manager from r right outer join l on r.id=l.id;
+
+        ID NAME          ID MANAG
+---------- ----- ---------- -----
+         1 a              1 m1
+         2 b              2 m2
+         3 c
+
+SQL> select  r.id,l.name,r.manager from r right outer join l on r.id=l.id;
+
+        ID NAME  MANAG
+---------- ----- -----
+         1 a     m1
+         2 b     m2
+           c
+
+SQL> select  r.id,l.id,l.name,r.manager from r right outer join l on r.id=l.id;
+
+        ID         ID NAME  MANAG
+---------- ---------- ----- -----
+         1          1 a     m1
+         2          2 b     m2
+                    3 c
+
+SQL> select  r.id,l.id,l.name,r.manager from r full outer join l on r.id=l.id;
+
+        ID         ID NAME  MANAG
+---------- ---------- ----- -----
+         1          1 a     m1
+         2          2 b     m2
+         4                  m4
+                    3 c
+
+SQL> select  l.id,l.name,r.id,r.manager from l full outer join r on r.id=l.id;
+
+        ID NAME          ID MANAG
+---------- ----- ---------- -----
+         1 a              1 m1
+         2 b              2 m2
+         3 c
+                          4 m4
+
+SQL> select * from dual;
+
+D
+-
+X
+
+SQL> --Function:function is block of code to do a particular task.
+SQL> --types of function
+SQL> --1.Aggregated function
+SQL> --2.Numeric function
+SQL> --3.String function
+SQL> --4.date and time function
+SQL> --Aggregate(avg(),sum(),count(),max(),min()
+SQL> select * from empl7
+  2  ;
+
+       EID ENAME           AGE     SALARY
+---------- -------- ---------- ----------
+         1 sdaw             34        562
+         2 asfg             33       3562
+         3 uytg             45        234
+
+SQL> select * from empl8;
+select * from empl8
+              *
+ERROR at line 1:
+ORA-00942: table or view does not exist
+
+
+SQL> select * from empl6;
+
+EID  ENAME           AGE   E_SALARY
+---- -------- ---------- ----------
+e001 Abhinesh         23      45800
+e003 Priyanka         25      55300
+e004 Sontoshi         26      35400
+e005 Sushree          27      45300
+
+SQL> select avg(e_salary) from empl6;
+
+AVG(E_SALARY)
+-------------
+        45450
+
+SQL> select count(e_salary) from empl6;
+
+COUNT(E_SALARY)
+---------------
+              4
+
+SQL> select min(e_salary) from empl6;
+
+MIN(E_SALARY)
+-------------
+        35400
+
+SQL> select max(e_salary) from empl6;
+
+MAX(E_SALARY)
+-------------
+        55300
+
+SQL> select min(e_salary) from empl6;
+
+MIN(E_SALARY)
+-------------
+        35400
+
+SQL> select sum(e_salary) from empl6;
+
+SUM(E_SALARY)
+-------------
+       181800
+
+SQL> select abs(456) from dual;
+
+  ABS(456)
+----------
+       456
+
+SQL> select power(2,5) from dual;
+
+POWER(2,5)
+----------
+        32
+
+SQL> select sqrt(255) from dual;
+
+ SQRT(255)
+----------
+15.9687194
+
+SQL> select mod(5,5) from dual;
+
+  MOD(5,5)
+----------
+         0
+
+SQL> ---string
+SQL> select initcap('gitanjali digal') from dual;
+
+INITCAP('GITANJ
+---------------
+Gitanjali Digal
+
+SQL> select length('gitanjali digal') from dual;
+
+LENGTH('GITANJALIDIGAL')
+------------------------
+                      15
+
+SQL> select translate('hemmo','m','l') from dual;
+
+TRANS
+-----
+hello
+
+SQL> select ltrim('      hemmo') from dual;
+
+LTRIM
+-----
+hemmo
+
+SQL> select rtrim('      hemmo          ') from dual;
+
+RTRIM('HEMM
+-----------
+      hemmo
+
+SQL> select sysdate() from dual;
+select sysdate() from dual
+              *
+ERROR at line 1:
+ORA-00923: FROM keyword not found where expected
+
+
+SQL> select sysdate from dual;
+
+SYSDATE
+---------
+31-MAY-25
+
+SQL> select lastday('2-june-2025') from dual;
+select lastday('2-june-2025') from dual
+       *
+ERROR at line 1:
+ORA-00904: "LASTDAY": invalid identifier
+
+
+SQL> select last_day('2-june-2025') from dual;
+
+LAST_DAY(
+---------
+30-JUN-25
+
+SQL> select next_day(sysdate) from dual;
+select next_day(sysdate) from dual
+       *
+ERROR at line 1:
+ORA-00909: invalid number of arguments
+
+
+SQL> select nextday(sysdate) from dual;
+select nextday(sysdate) from dual
+       *
+ERROR at line 1:
+ORA-00904: "NEXTDAY": invalid identifier
+
+
+SQL> select next_day(sysdate()) from dual;
+select next_day(sysdate()) from dual
+       *
+ERROR at line 1:
+ORA-00909: invalid number of arguments
+
+
+SQL> select next_day(sysdate,'wedneshday') from dual;
+
+NEXT_DAY(
+---------
+04-JUN-25
+
+SQL> commit;
+
+Commit complete.
+
+SQL>
